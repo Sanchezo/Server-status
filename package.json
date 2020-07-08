@@ -1,0 +1,19 @@
+{
+  "name": "rebels_bot",
+  "version": "1.0.0",
+  "description": "A discord bot that checks game server's status",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "discord.js": "^12.1.0",
+    "gamedig": "^2.0.21"
+  },
+  "keywords": [
+    "discord.js"
+  ],
+  "author": "Sanchez",
+  "license": "MIT"
+}
