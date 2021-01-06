@@ -97,4 +97,4 @@ cron.schedule(`*/5 * * * *`, () => {
     console.log('[========================================================]');
 
 });
-client.login("NzEyNjIxMzY0MzU5NzI1MDU2.XwWgHg.9P-87ZovROwQ4Fm80eeLhXI2j3Q") // we log into discord api using token
+client.login("") // we log into discord api using token
