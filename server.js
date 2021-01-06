@@ -4,54 +4,97 @@ add configuration via commands
 */
 const Gamedig = require('gamedig'); // Require packet that allows us to check game server's activity
 var cron = require('node-cron'); // Require packet that allows us to schedule tasks every x sec/min/hour/day
-const Discord = require("discord.js") // Require packet that allows us to communicate with discord api
-const client = new Discord.Client()
-var status // variable that stores server status
-const prefix = "." // bot's prefix
+const Discord = require("discord.js"); // Require packet that allows us to communicate with discord api
+const client = new Discord.Client();
+var servers = [
+    { 
+        name: 'Omega EU', 
+        host: 's1.rebels-games.com', 
+        proxy: '27016', 
+        status: 'offline', 
+        msgSent: false 
+    }
+    // ,{ 
+        // name: 'Test Server', 
+        // host: '176.9.54.124', 
+        // proxy: '27015', 
+        // status: 'offline',
+        // msgSent: false  
+    // }
+];
 
-client.on("ready", ready => {
-    console.log(`Uruchomiono jako ${client.user.tag}`) // when bot is ready we print it in console
-})
+const prefix = "."; // bot's prefix
+
+client.on("ready", () => {
+    console.log(`Uruchomiono jako ${client.user.tag}`);
+    console.log('');
+});
 
 
-cron.schedule(`*/1 * * * *`, () => { // we schedule a task every minute
-    console.log('running a task every minute'); // log it in console
-    Gamedig.query({ // we scan game server specified below
-        type: 'example', //game type
-        host: 'serverip', // server ip
-       
-    }).then((state) => { //after scanning we check server state - if server is online
+cron.schedule(`*/5 * * * *`, () => {
+    console.log('[========================================================]');
 
+    servers.forEach(function (s, i) {
+        Gamedig.query({
+            type: 'spaceengineers',
+            host: s.host,
+            port: s.proxy
+        }).then((state) => {
 
-        console.log(state); // prints server state in console
-        if (status == "offline") { // we check if server was previosly offline
-            var guild = client.guilds.cache.get('guild id'); // We get a server by it's id
-            if (guild && guild.channels.cache.get('channel id')) { // We check if specified server exist and we check if specified channel exists
+            let now = new Date();
+            console.log(`${now.getDate()}-${now.getMonth()}-${now.getFullYear()} ${now.getHours()}:${now.getMinutes()} | ${s.name} | STATUS: ONLINE`);
 
-                guild.channels.cache.get('channel id').send("example message!!") // if all conditions were satisfied send message 
-                status = "online" // change status to online
-            } else {
-                console.log("nope");
-                //if the bot doesn't have guild with the id guildid
-                // or if the guild doesn't have the channel with id channelid
+            if(s.status == 'offline'){
+                s.status = 'online';
+                s.msgSent = false;
             }
-        }
-    }).catch((error) => { // if server is offline
-        console.log(error)
-        console.log("Server is offline");
 
-        var guild = client.guilds.cache.get('guild id');// as above
-        if (guild && guild.channels.cache.get('channel id')) { // as above
+            if(s.status == 'online' && s.msgSent == false){
+                var guild = client.guilds.cache.get('306529139479937025');
+                if (guild && guild.channels.cache.get('306529139479937025')) {
+                    const exampleEmbed = new Discord.MessageEmbed()
+                        .setColor('#00ff00')
+                        .setTitle('Server Status: Online')        
+                        .setAuthor('Rebels Games Bot 🛰️', 'https://cdn.discordapp.com/attachments/712677998343487490/730446281884958751/LogoRebels4.png')
+                        .setDescription('• Service available for use.')
+                        .addField('State:', `• ${s.name} is Online!
+• Connect: steam://connect/s1.rebels-games.com:27016`, true)        
+                        .setTimestamp();                    
+                    guild.channels.cache.get('306529139479937025').send(exampleEmbed);
+                    s.msgSent = true;
+                }
+            }
 
-            guild.channels.cache.get('channel id').send("<@175353646521778176> server went offline!")// we send message that says that server went offline
-            status = "offline" //we change status to offline
-        } else {
-            console.log("nope");
-            //if the bot doesn't have guild with the id guildid
-            // or if the guild doesn't have the channel with id channelid
-        }
+        }).catch((error) => {
 
+            let now = new Date();
+            console.log(`${now.getDate()}-${now.getMonth()}-${now.getFullYear()} ${now.getHours()}:${now.getMinutes()} | ${s.name} | STATUS: OFFLINE`);
+
+            if(s.status == 'online'){
+                s.status = 'offline';
+                s.msgSent = false;
+            }
+
+            if(s.status == 'offline' && s.msgSent !== true){
+                var guild = client.guilds.cache.get('306529139479937025');
+                if (guild && guild.channels.cache.get('306529139479937025')) {
+                    const exampleEmbed = new Discord.MessageEmbed()
+                        .setColor('#ff3300')
+                        .setTitle('Server Status: Offline')        
+                        .setAuthor('Rebels Games Bot 🛰️', 'https://cdn.discordapp.com/attachments/712677998343487490/730446281884958751/LogoRebels4.png')
+                        .setDescription('• Service interruption detected: Administration has been notified, please be patient.')
+                        .addField('State:', `• ${s.name} is Offline!
+• <@&633735638469967904> fix it!`, true)        
+                        .setTimestamp();                    
+                    guild.channels.cache.get('306529139479937025').send(exampleEmbed);
+                    s.msgSent = true;
+                }
+            }
+
+        });
 
     });
+    console.log('[========================================================]');
+
 });
-client.login("token") // we log into discord api using token
+client.login("NzEyNjIxMzY0MzU5NzI1MDU2.XwWgHg.9P-87ZovROwQ4Fm80eeLhXI2j3Q") // we log into discord api using token
